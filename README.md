@@ -38,7 +38,7 @@ This package provides a queue connector called `sqs-bulk`. Inside your `queue.ph
 
 ```php
 'connections' => [
-        'batch-sqs' => [
+        'sqs-bulk' => [
             'driver'      => 'sqs-bulk',
             'key'         => env('AWS_KEY', null),
             'secret'      => env('AWS_SECRET', null),

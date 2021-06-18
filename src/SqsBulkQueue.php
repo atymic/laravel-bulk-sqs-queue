@@ -22,12 +22,18 @@ class SqsBulkQueue extends IlluminateSqsQueue
 
     public function bulk($jobs, $data = '', $queue = null): void
     {
-        $promise = Each::ofLimit($this->batchGenerator($jobs, $data, $queue), 5);
+        $responses = collect();
 
-        $responses = $promise->wait();
+        $promise = Each::ofLimit(
+            $this->batchGenerator($jobs, $data, $queue),
+            5,
+            fn(Result $res) => $responses->push($res)
+        );
 
-        $failed = collect($responses)
-            ->filter(fn(Result $res) => count($res['Failed']))
+        $promise->wait();
+
+        $failed = $responses
+            ->filter(fn(Result $res) => count($res['Failed'] ?? []))
             ->flatten(1);
 
         if ($failed->isNotEmpty()) {
