@@ -2,9 +2,9 @@
 
 namespace Atymic\AsyncSqsQueue\Tests;
 
+use Atymic\AsyncSqsQueue\AsyncSqsQueueServiceProvider;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Orchestra\Testbench\TestCase as Orchestra;
-use Atymic\AsyncSqsQueue\AsyncSqsQueueServiceProvider;
 
 class TestCase extends Orchestra
 {

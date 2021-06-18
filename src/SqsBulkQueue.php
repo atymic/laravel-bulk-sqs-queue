@@ -27,13 +27,13 @@ class SqsBulkQueue extends IlluminateSqsQueue
         $promise = Each::ofLimit(
             $this->batchGenerator($jobs, $data, $queue),
             5,
-            fn(Result $res) => $responses->push($res)
+            fn (Result $res) => $responses->push($res)
         );
 
         $promise->wait();
 
         $failed = $responses
-            ->filter(fn(Result $res) => count($res['Failed'] ?? []))
+            ->filter(fn (Result $res) => count($res['Failed'] ?? []))
             ->flatten(1);
 
         if ($failed->isNotEmpty()) {
@@ -69,7 +69,7 @@ class SqsBulkQueue extends IlluminateSqsQueue
         return $this->sqs->sendMessageBatchAsync([
             'QueueUrl' => $this->getQueue($queue),
             'Entries' => array_map(
-                fn(string $payload) => [
+                fn (string $payload) => [
                     'Id' => (string) Str::uuid(),
                     'MessageBody' => $payload,
                 ],
