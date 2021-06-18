@@ -5,8 +5,6 @@
 [![GitHub Code Style Action Status](https://img.shields.io/github/workflow/status/atymic/laravel-bulk-sqs-queue/Check%20&%20fix%20styling?label=code%20style)](https://github.com/atymic/laravel-bulk-sqs-queue/actions?query=workflow%3A"Check+%26+fix+styling"+branch%3Amain)
 [![Total Downloads](https://img.shields.io/packagist/dt/atymic/laravel-bulk-sqs-queue.svg?style=flat-square)](https://packagist.org/packages/atymic/laravel-bulk-sqs-queue)
 
-Docs TBC :)
-
 ## Installation
 
 You can install the package via composer:
