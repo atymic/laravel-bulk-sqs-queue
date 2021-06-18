@@ -1,0 +1,61 @@
+{
+    "name": "atymic/laravel-bulk-sqs-queue",
+    "description": "Laravel SQS Bulk Queue",
+    "keywords": [
+        "atymic",
+        "laravel",
+        "laravel-bulk-sqs-queue",
+        "queue",
+        "sqs"
+    ],
+    "homepage": "https://github.com/atymic/laravel-bulk-sqs-queue",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "atymic",
+            "email": "atymicq@gmail.com",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php": "^7.4 || ^8.0",
+        "illuminate/contracts": "^7.0 || ^8.0",
+        "aws/aws-sdk-php": "^3"
+    },
+    "require-dev": {
+        "brianium/paratest": "^6.2",
+        "nunomaduro/collision": "^5.3",
+        "orchestra/testbench": "^6.15",
+        "phpunit/phpunit": "^9.3"
+    },
+    "autoload": {
+        "psr-4": {
+            "Atymic\\AsyncSqsQueue\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Atymic\\AsyncSqsQueue\\Tests\\": "tests"
+        }
+    },
+    "scripts": {
+        "psalm": "vendor/bin/psalm",
+        "test": "./vendor/bin/testbench package:test --parallel --no-coverage",
+        "test-coverage": "vendor/bin/phpunit --coverage-html coverage"
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Atymic\\AsyncSqsQueue\\AsyncSqsQueueServiceProvider"
+            ],
+            "aliases": {
+                "AsyncSqsQueue": "Atymic\\AsyncSqsQueue\\AsyncSqsQueueFacade"
+            }
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}
