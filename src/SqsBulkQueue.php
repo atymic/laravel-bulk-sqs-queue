@@ -5,9 +5,7 @@ namespace Atymic\AsyncSqsQueue;
 
 use Atymic\AsyncSqsQueue\Exception\BulkSqsDispatchFailed;
 use Aws\Result;
-use Generator;
 use GuzzleHttp\Promise\Each;
-use GuzzleHttp\Promise\Promise;
 use Illuminate\Queue\SqsQueue as IlluminateSqsQueue;
 use Str;
 
