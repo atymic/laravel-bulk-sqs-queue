@@ -13,7 +13,7 @@ use Str;
 
 class SqsBulkQueue extends IlluminateSqsQueue
 {
-    protected int $concurrency = 10;
+    protected int $concurrency = 5;
 
     /** @var int SQS allows up to 10 messages per batch */
     protected const BATCH_LIMIT = 10;
@@ -22,26 +22,28 @@ class SqsBulkQueue extends IlluminateSqsQueue
 
     public function bulk($jobs, $data = '', $queue = null): void
     {
-        $responses = collect();
+        $this->batchGenerator($jobs, $data, $queue);
 
-        $promise = Each::ofLimit(
-            $this->batchGenerator($jobs, $data, $queue),
-            $this->concurrency,
-            fn (Result $res) => $responses->push($res)
-        );
-
-        $promise->wait();
-
-        $failed = $responses
-            ->filter(fn (Result $res) => count($res['Failed'] ?? []))
-            ->flatten(1);
-
-        if ($failed->isNotEmpty()) {
-            throw BulkSqsDispatchFailed::withFailureResponses($failed);
-        }
+//        $responses = collect();
+//
+//        $promise = Each::ofLimit(
+//            $this->batchGenerator($jobs, $data, $queue),
+//            5,
+//            fn (Result $res) => $responses->push($res)
+//        );
+//
+//        $promise->wait();
+//
+//        $failed = $responses
+//            ->filter(fn (Result $res) => count($res['Failed'] ?? []))
+//            ->flatten(1);
+//
+//        if ($failed->isNotEmpty()) {
+//            throw BulkSqsDispatchFailed::withFailureResponses($failed);
+//        }
     }
 
-    protected function batchGenerator($jobs, $data = '', $queue = null): Generator
+    protected function batchGenerator($jobs, $data = '', $queue = null)
     {
         $batchPayloads = [];
         $batchBytes = 0;
@@ -53,20 +55,20 @@ class SqsBulkQueue extends IlluminateSqsQueue
             $batchBytes += strlen($payload);
 
             if ($batchBytes >= self::BATCH_SIZE_LIMIT || count($batchPayloads) >= self::BATCH_LIMIT) {
-                yield $this->dispatchBatchAsync($queue, $batchPayloads);
+                $this->dispatchBatchAsync($queue, $batchPayloads);
                 $batchPayloads = [];
                 $batchBytes = 0;
             }
         }
 
         if (count($batchPayloads)) {
-            yield $this->dispatchBatchAsync($queue, $batchPayloads);
+            $this->dispatchBatchAsync($queue, $batchPayloads);
         }
     }
 
-    protected function dispatchBatchAsync(string $queue, array $payloads): Promise
+    protected function dispatchBatchAsync(string $queue, array $payloads)
     {
-        return $this->sqs->sendMessageBatchAsync([
+        return $this->sqs->sendMessageBatch([
             'QueueUrl' => $this->getQueue($queue),
             'Entries' => array_map(
                 fn (string $payload) => [
