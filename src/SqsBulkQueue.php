@@ -13,7 +13,7 @@ use Str;
 
 class SqsBulkQueue extends IlluminateSqsQueue
 {
-    protected int $concurrency = 5;
+    protected int $concurrency = 10;
 
     /** @var int SQS allows up to 10 messages per batch */
     protected const BATCH_LIMIT = 10;
@@ -26,7 +26,7 @@ class SqsBulkQueue extends IlluminateSqsQueue
 
         $promise = Each::ofLimit(
             $this->batchGenerator($jobs, $data, $queue),
-            5,
+            $this->concurrency,
             fn (Result $res) => $responses->push($res)
         );
 
