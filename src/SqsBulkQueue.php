@@ -9,7 +9,7 @@ use Generator;
 use GuzzleHttp\Promise\Each;
 use GuzzleHttp\Promise\Promise;
 use Illuminate\Queue\SqsQueue as IlluminateSqsQueue;
-use Str;
+use Illuminate\Support\Str;
 
 class SqsBulkQueue extends IlluminateSqsQueue
 {
@@ -43,6 +43,8 @@ class SqsBulkQueue extends IlluminateSqsQueue
 
     protected function batchGenerator($jobs, $data = '', $queue = null): Generator
     {
+        $queue = $queue ?: $this->default;
+        
         $batchPayloads = [];
         $batchBytes = 0;
 
