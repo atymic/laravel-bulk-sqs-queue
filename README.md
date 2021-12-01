@@ -15,20 +15,19 @@ composer require atymic/laravel-bulk-sqs-queue
 
 ## How it works
 
-By default, the Laravel SQS queue provides a `Queue::bulk()` method, which accepts an array of jobs for dispatch. This loops over every job, making one HTTP
-request for each job.
+By default, Laravel allows you to easily execute a batch of jobs with `Queue::bulk()` method or with built-in [job batching](https://laravel.com/docs/master/queues#job-batching). Both methods accept an array of jobs for dispatch and loop over every job, making one HTTP request for each job.
 
 This isn't an issue when you are dispatching a few jobs, but there's two major issues with bigger batches:
 
 - Waiting for 1000 http requests (even SQS, with 20-50ms latency) is two to five seconds, that's slow!
 - SQS is billed per request, and they support batching of up to 10 messages for the same cost as a single `sendMessage` call. That's a 10x cost saving!
 
-Under the hood, this package override the bulk method to:
+But AWS SQS has a [batch action](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-batch-api-actions.html) that let you group up to 10 messages with a single request, in order to reduce costs. Under the hood, this package override the bulk method to:
 
 - Batch jobs into 10 per request, or 200kb chunks (SQS has a maximum of 256kb, including request overhead/etc)
 - Dispatch those batches asynchronously, up to `$concurrency` at a time (default 5)
 
-That about it. The rest of the queue functions the exact same as normal :)
+That's about it. With this package, the laravel queue system should work the exact same as normal. You should have the same result in your application and your AWS SQS dashboard but with a smaller AWS bill :)
 
 ## Usage
 
@@ -37,16 +36,50 @@ This package provides a queue connector called `sqs-bulk`. Inside your `queue.ph
 ```php
 'connections' => [
         'sqs-bulk' => [
-            'driver'      => 'sqs-bulk',
-            'key'         => env('AWS_KEY', null),
-            'secret'      => env('AWS_SECRET', null),
-            'prefix'      => env('AWS_PREFIX', null),
-            'queue'       => env('AWS_QUEUE', null),
-            'region'      => env('AWS_REGION', null),
+            'driver'       => 'sqs-bulk',
+            'key'          => env('AWS_ACCESS_KEY_ID'),
+            'secret'       => env('AWS_SECRET_ACCESS_KEY'),
+            'prefix'       => env('SQS_PREFIX', 'https://sqs.us-east-1.amazonaws.com/your-account-id'),
+            'queue'        => env('SQS_QUEUE', 'default'),
+            'suffix'       => env('SQS_SUFFIX'),
+            'region'       => env('AWS_DEFAULT_REGION', 'us-east-1'),
+            'after_commit' => false,
             'concurrency'  => 5, // Set the request concurrency, defaults to 5
         ],
-// [...]
+]
 ```
+
+Then you can start a queue worker for the new "connection" and the given queue ('default' queue can be override with `SQS_QUEUE`):
+
+```bash
+php artisan queue:work sqs-bulk --queue=default
+```
+
+It will process new jobs as they are pushed onto the queue. You can group jobs with queue's bulk method:
+
+```php
+Illuminate\Support\Facades\Queue::bulk([
+    new \App\Jobs\Foo,
+    new \App\Jobs\Bar,
+    new \App\Jobs\Baz,
+], '', 'default');
+```
+
+or with laravel's built-in [job batching](https://laravel.com/docs/master/queues#job-batching) feature:
+
+```php
+Illuminate\Support\Facades\Bus::batch([
+    new \App\Jobs\Foo,
+    new \App\Jobs\Bar,
+    new \App\Jobs\Baz,
+])->name('My sqs batch')->onQueue('default')->dispatch();
+```
+
+It should have processed the 3 jobs by creating 3 "messages" on AWS SQS but with only 1 request.
+
+### Failing jobs
+
+This package only affect the way jobs are transmitted to AWS SQS. Once received by AWS SQS, they are handled as separate messages. From AWS SQS perspective, there is no relation between messages. The batch request can result in a combination of successful and unsuccessful actions that doesn't affect each others.
 
 ## Testing
 
