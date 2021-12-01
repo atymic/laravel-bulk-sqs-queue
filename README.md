@@ -68,7 +68,7 @@ Illuminate\Support\Facades\Queue::bulk([
 or with laravel's built-in [job batching](https://laravel.com/docs/master/queues#job-batching) feature:
 
 ```php
-Illuminate\Support\Facades\Bus::batch([                                                                                                                                           new \App\Jobs\JobToto,                                                                                                                                 new \App\Jobs\JobToto,                                                                                                                             ])->dispatch();
+Illuminate\Support\Facades\Bus::batch([
     new \App\Jobs\Foo,
     new \App\Jobs\Bar,
     new \App\Jobs\Baz,
