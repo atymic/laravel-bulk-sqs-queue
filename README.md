@@ -27,7 +27,7 @@ But AWS SQS has a [batch action](https://docs.aws.amazon.com/AWSSimpleQueueServi
 - Batch jobs into 10 per request, or 200kb chunks (SQS has a maximum of 256kb, including request overhead/etc)
 - Dispatch those batches asynchronously, up to `$concurrency` at a time (default 5)
 
-That's about it. With this package, the laravel queue system should work the exact same as normal. You should have the exact same result in your application and you AWS SQS dashboard but with a smaller AWS bill :)
+That's about it. With this package, the laravel queue system should work the exact same as normal. You should have the same result in your application and your AWS SQS dashboard but with a smaller AWS bill :)
 
 ## Usage
 
